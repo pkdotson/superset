@@ -67,7 +67,6 @@ from superset.errors import ErrorLevel, SupersetError, SupersetErrorType
 from superset.exceptions import SupersetSecurityException
 from superset.security.guest_token import (
     GuestToken,
-    GuestTokenResource,
     GuestTokenResources,
     GuestTokenResourceType,
     GuestTokenRlsRule,
@@ -1070,17 +1069,15 @@ class SupersetSecurityManager(  # pylint: disable=too-many-public-methods
 
             assert datasource
 
-            is_dashboard_access_check_applicable = feature_flag_manager.is_feature_enabled(
+            should_check_dashboard_access = feature_flag_manager.is_feature_enabled(
                 "DASHBOARD_RBAC"
-            ) or feature_flag_manager.is_feature_enabled(
-                "EMBEDDED_SUPERSET"
-            )
+            ) or self.is_guest_user(g.user)
 
             if not (
                 self.can_access_schema(datasource)
                 or self.can_access("datasource_access", datasource.perm or "")
                 or (
-                    is_dashboard_access_check_applicable
+                    should_check_dashboard_access
                     and self.can_access_based_on_dashboard(datasource)
                 )
             ):
@@ -1106,11 +1103,13 @@ class SupersetSecurityManager(  # pylint: disable=too-many-public-methods
     def get_anonymous_user(self) -> User:  # pylint: disable=no-self-use
         return AnonymousUserMixin()
 
-    def get_user_roles(self) -> List[Role]:
-        if g.user.is_anonymous:
+    def get_user_roles(self, user: Optional[User] = None) -> List[Role]:
+        if not user:
+            user = g.user
+        if user.is_anonymous:
             public_role = current_app.config.get("AUTH_ROLE_PUBLIC")
             return [self.get_public_role()] if public_role else []
-        return g.user.roles
+        return user.roles
 
     def get_guest_rls_filters(self, table: "BaseDatasource") -> List[GuestTokenRlsRule]:
         """
@@ -1234,7 +1233,7 @@ class SupersetSecurityManager(  # pylint: disable=too-many-public-methods
         def has_rbac_access() -> bool:
             return is_feature_enabled("DASHBOARD_RBAC") and any(
                 dashboard_role.id
-                in [user_role.id for user_role in self.get_user_roles()]
+                in [user_role.id for user_role in self.get_user_roles(g.user)]
                 for dashboard_role in dashboard.roles
             )
 
@@ -1328,10 +1327,12 @@ class SupersetSecurityManager(  # pylint: disable=too-many-public-methods
             logger.warning("Invalid guest token", exc_info=True)
             return None
         else:
-            return self.guest_user_cls(
-                token=token,
-                roles=[self.find_role(current_app.config["GUEST_ROLE_NAME"])],
-            )
+            return self.get_guest_user_from_token(token)
+
+    def get_guest_user_from_token(self, token: GuestToken) -> GuestUser:
+        return self.guest_user_cls(
+            token=token, roles=[self.find_role(current_app.config["GUEST_ROLE_NAME"])],
+        )
 
     @staticmethod
     def parse_jwt_guest_token(raw_token: str) -> GuestToken:
@@ -1371,13 +1372,13 @@ class SupersetSecurityManager(  # pylint: disable=too-many-public-methods
         return None
 
     def has_guest_access(
-        self, resource_type: GuestTokenResourceType, id: Union[str, int]
+        self, resource_type: GuestTokenResourceType, resource_id: Union[str, int]
     ) -> bool:
         user = self.get_current_guest_user_if_guest()
         if not user:
             return False
 
-        strid = str(id)
+        strid = str(resource_id)
         for resource in user.resources:
             if resource["type"] == resource_type.value and str(resource["id"]) == strid:
                 return True
