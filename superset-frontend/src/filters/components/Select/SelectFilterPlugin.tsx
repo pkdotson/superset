@@ -278,6 +278,7 @@ export default function PluginFilterSelect(props: PluginFilterSelectProps) {
     return options;
   }, [data, datatype, groupby, labelFormatter]);
 
+  console.log('-------SelectFilterPlugin-------', parentRef);
   return (
     <FilterPluginStyle height={height} width={width}>
       <StyledFormItem

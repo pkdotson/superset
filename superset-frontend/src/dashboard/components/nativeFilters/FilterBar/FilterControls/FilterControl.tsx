@@ -118,7 +118,10 @@ const FilterControl: React.FC<FilterProps> = ({
   parentRef,
 }) => {
   const { name = '<undefined>' } = filter;
-
+  console.log('---------- filtercontrol ------');
+  console.log('showOverflow', showOverflow);
+  console.log('parentRef', parentRef);
+  console.log('---------- filtercontrol end ------');
   const isMissingRequiredValue = checkIsMissingRequiredValue(
     filter,
     filter.dataMask?.filterState,

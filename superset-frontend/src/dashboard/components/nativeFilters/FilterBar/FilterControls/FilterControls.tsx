@@ -49,12 +49,14 @@ type FilterControlsProps = {
   directPathToChild?: string[];
   dataMaskSelected: DataMaskStateWithId;
   onFilterSelectionChange: (filter: Filter, dataMask: DataMask) => void;
+  parentRef?: object;
 };
 
 const FilterControls: FC<FilterControlsProps> = ({
   directPathToChild,
   dataMaskSelected,
   onFilterSelectionChange,
+  parentRef,
 }) => {
   const [visiblePopoverId, setVisiblePopoverId] = useState<string | null>(null);
   const filters = useFilters();
@@ -92,6 +94,7 @@ const FilterControls: FC<FilterControlsProps> = ({
           </div>
         );
       }
+      console.log('hello imp popover fact')
       return (
         <CascadePopover
           data-test="cascade-filters-control"
@@ -105,6 +108,7 @@ const FilterControls: FC<FilterControlsProps> = ({
           onFilterSelectionChange={onFilterSelectionChange}
           directPathToChild={directPathToChild}
           inView={false}
+          parentRef={parentRef}
         />
       );
     },

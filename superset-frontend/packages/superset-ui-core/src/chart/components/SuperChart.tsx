@@ -148,9 +148,11 @@ export default class SuperChart extends React.PureComponent<Props, {}> {
       Wrapper,
       queriesData,
       enableNoResults,
+      showOverflow,
+      parentRef,
       ...rest
     } = this.props as PropsWithDefault;
-
+    console.log('SUPERSETCHART', chartType);
     const chartProps = this.createChartProps({
       ...rest,
       queriesData,

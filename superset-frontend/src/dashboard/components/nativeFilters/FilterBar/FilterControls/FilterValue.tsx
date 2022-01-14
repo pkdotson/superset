@@ -246,6 +246,7 @@ const FilterValue: React.FC<FilterProps> = ({
     );
   }
 
+  console.log('parentREf ---FlterValue --->', { filterType, parentRef });
   return (
     <StyledDiv data-test="form-item-value">
       {isLoading ? (

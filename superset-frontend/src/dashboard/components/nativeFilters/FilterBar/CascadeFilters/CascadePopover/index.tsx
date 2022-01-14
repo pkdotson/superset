@@ -41,6 +41,7 @@ interface CascadePopoverProps {
   inView?: boolean;
   onVisibleChange: (visible: boolean) => void;
   onFilterSelectionChange: (filter: Filter, dataMask: DataMask) => void;
+  parentRef?: object;
 }
 
 const StyledTitleBox = styled.div`
@@ -93,6 +94,7 @@ const CascadePopover: React.FC<CascadePopoverProps> = ({
   onFilterSelectionChange,
   directPathToChild,
   inView,
+  parentRef,
 }) => {
   const [currentPathToChild, setCurrentPathToChild] = useState<string[]>();
   const dataMask = dataMaskSelected[filter.id];
@@ -156,6 +158,7 @@ const CascadePopover: React.FC<CascadePopoverProps> = ({
   }, [currentPathToChild]);
 
   if (!filter.cascadeChildren?.length) {
+    console.log(' there is no filter cascade children', parentRef);
     return (
       <FilterControl
         dataMaskSelected={dataMaskSelected}
@@ -163,10 +166,12 @@ const CascadePopover: React.FC<CascadePopoverProps> = ({
         directPathToChild={directPathToChild}
         onFilterSelectionChange={onFilterSelectionChange}
         inView={inView}
+        parentRef={parentRef}
+        showOverflow
       />
     );
   }
-
+  console.log('---- Cascade popover ------', parentRef);
   const title = (
     <StyledTitleBox>
       <StyledTitle>
@@ -232,6 +237,8 @@ const CascadePopover: React.FC<CascadePopoverProps> = ({
                 )}
               </>
             }
+            parentRef={parentRef}
+            showOverflow
           />
         ))}
       </div>
