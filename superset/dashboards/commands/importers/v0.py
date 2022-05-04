@@ -27,7 +27,6 @@ from sqlalchemy.orm import make_transient, Session
 from superset import db
 from superset.commands.base import BaseCommand
 from superset.connectors.sqla.models import SqlaTable, SqlMetric, TableColumn
-from superset.dao.datasource import DatasourceDAO
 from superset.datasets.commands.importers.v0 import import_dataset
 from superset.exceptions import DashboardImportException
 from superset.models.dashboard import Dashboard
@@ -64,7 +63,10 @@ def import_chart(
     slc_to_import = slc_to_import.copy()
     slc_to_import.reset_ownership()
     params = slc_to_import.params_dict
-    datasource = DatasourceDAO.get_datasource_by_name(
+    # pylint: disable=import-outside-toplevel
+    from superset.dao.datasource import DatasourceDAO
+
+    datasource = DatasourceDAO().get_datasource_by_name(
         session,
         slc_to_import.datasource_type,
         params["datasource_name"],

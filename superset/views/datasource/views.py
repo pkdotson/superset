@@ -74,7 +74,7 @@ class Datasource(BaseSupersetView):
         datasource_id = datasource_dict.get("id")
         datasource_type = datasource_dict.get("type")
         database_id = datasource_dict["database"].get("id")
-        orm_datasource = DatasourceDAO.get_datasource(
+        orm_datasource = DatasourceDAO().get_datasource(
             datasource_type, datasource_id, db.session
         )
         orm_datasource.database_id = database_id
@@ -131,7 +131,7 @@ class Datasource(BaseSupersetView):
     @api
     @handle_api_exception
     def get(self, datasource_type: str, datasource_id: int) -> FlaskResponse:
-        datasource = DatasourceDAO.get_datasource(
+        datasource = DatasourceDAO().get_datasource(
             datasource_type, datasource_id, db.session
         )
         return self.json_response(sanitize_datasource_data(datasource.data))
@@ -144,7 +144,7 @@ class Datasource(BaseSupersetView):
         self, datasource_type: str, datasource_id: int
     ) -> FlaskResponse:
         """Gets column info from the source system"""
-        datasource = DatasourceDAO.get_datasource(
+        datasource = DatasourceDAO().get_datasource(
             datasource_type, datasource_id, db.session
         )
         try:
@@ -167,7 +167,7 @@ class Datasource(BaseSupersetView):
         except ValidationError as err:
             return json_error_response(str(err), status=400)
 
-        datasource = DatasourceDAO.get_datasource_by_name(
+        datasource = DatasourceDAO().get_datasource_by_name(
             session=db.session,
             datasource_type=params["datasource_type"],
             database_name=params["database_name"],
